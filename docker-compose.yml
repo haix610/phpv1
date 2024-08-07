@@ -87,7 +87,6 @@ services:
       
     environment:
       TZ: "Asia/Shanghai"
-      REDIS_PASSWORD: nn1123
     entrypoint: [ "redis-server", "/etc/redis.conf" ]
     restart: always
     # command: 
