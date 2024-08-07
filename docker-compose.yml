@@ -1,0 +1,122 @@
+version: "3.5"
+services:
+  nginx:
+    build:
+      context: ./services/nginx
+    container_name: nginx
+    privileged: true
+    hostname: nginx
+    ports:
+      - 80:80
+      - 443:443
+      - 18308:18308
+      - 7310-7340:7310-7340
+      
+    volumes:
+      - ./www:/var/www/html/
+      - ./www:/www/wwwroot/
+      - ./services/nginx/conf.d:/etc/nginx/conf.d/
+      - ./services/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./logs/nginx:/var/log/nginx/
+      - ./logs/nginx:/www/wwwlogs
+      - ./logs/nginx:/opt/log
+    restart: always
+    depends_on:
+      - php74
+    environment:
+      TZ: "Asia/Shanghai"
+    networks:
+        bo:
+            ipv4_address: 10.5.0.7
+
+  php74:
+    build:
+      context: ./services/php74
+    container_name: php74
+    hostname: php74
+    privileged: true
+    volumes:
+      - ./www:/var/www/html/
+      - ./www:/www/wwwroot/
+      - ./services/php74/php.ini:/usr/local/etc/php/php.ini
+      - ./services/php74/php-fpm.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./logs/php74:/var/log/php
+      - ./logs/php74:/opt/log
+      - ./logs/php74:/www/wwwlogs
+    restart: always
+    depends_on:
+      - mysql
+      - redis
+      - mongo
+    environment:
+      TZ: "Asia/Shanghai"
+    networks:
+        bo:
+            ipv4_address: 10.5.0.5
+
+  mysql: # 相关文档 https://hub.docker.com/_/mysql
+    container_name: mysql
+    hostname: mysql
+    build:
+      context: ./services/mysql
+      args:
+        - MYSQL_VER=10.5
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./services/mysql/my.cnf:/etc/mysql/my.cnf
+      - ./data/mysql:/var/lib/mysql
+      - ./logs/mysql:/var/log/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456 # root密码 自行修改
+    restart: always
+    networks:
+        bo:
+            ipv4_address: 10.5.0.2
+
+  redis:
+    build:
+      context: ./services/redis
+    container_name: redis
+    hostname: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - ./services/redis/redis.conf:/etc/redis.conf
+      - ./data/redis:/data
+      - ./logs/redis:/logs
+      
+    environment:
+      TZ: "Asia/Shanghai"
+    entrypoint: [ "redis-server", "/etc/redis.conf" ]
+    restart: always
+    # command: 
+    #   - --loadmodule /etc/libredis_cell.so
+    networks:
+        bo:
+            ipv4_address: 10.5.0.3
+  mongo:  
+    build:
+      context: ./services/mongo
+    restart: always
+    container_name: mongo
+    ports:
+      - 27010:27017  # 本地端口(可自定义):容器内默认端口(mongo设定为27017)
+    volumes:
+      - ./services/mongo/setup:/docker-entrypoint-initdb.d/  # 本地文件路径:容器内映射路径
+      - ./data/mongo:/data/
+    environment:  # admin账号和密码
+      TZ: "Asia/Shanghai"
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+    #privileged: true
+    networks:
+        bo:
+            ipv4_address: 10.5.0.4
+
+networks:
+  bo:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
