@@ -67,7 +67,7 @@ services:
       - ./data/mysql:/var/lib/mysql
       - ./logs/mysql:/var/log/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: 123456 # root密码 自行修改
+      MYSQL_ROOT_PASSWORD: "r@qquu2024" # root密码 自行修改
     restart: always
     networks:
         bo:
