@@ -9,8 +9,7 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 18308:18308
-      - 7310-7340:7310-7340
+      - 7325-7340:7325-7340
       
     volumes:
       - ./www:/var/www/html/
@@ -62,7 +61,7 @@ services:
       args:
         - MYSQL_VER=10.5
     ports:
-      - "3306:3306"
+      - "7324:3306"
     volumes:
       - ./services/mysql/my.cnf:/etc/mysql/my.cnf
       - ./data/mysql:/var/lib/mysql
@@ -80,7 +79,7 @@ services:
     container_name: redis
     hostname: redis
     ports:
-      - 6379:6379
+      - 7323:6379
     volumes:
       - ./services/redis/redis.conf:/etc/redis.conf
       - ./data/redis:/data
@@ -88,6 +87,7 @@ services:
       
     environment:
       TZ: "Asia/Shanghai"
+      REDIS_PASSWORD: nn1123
     entrypoint: [ "redis-server", "/etc/redis.conf" ]
     restart: always
     # command: 
@@ -101,7 +101,7 @@ services:
     restart: always
     container_name: mongo
     ports:
-      - 27010:27017  # 本地端口(可自定义):容器内默认端口(mongo设定为27017)
+      - 7322:27017  # 本地端口(可自定义):容器内默认端口(mongo设定为27017)
     volumes:
       - ./services/mongo/setup:/docker-entrypoint-initdb.d/  # 本地文件路径:容器内映射路径
       - ./data/mongo:/data/
